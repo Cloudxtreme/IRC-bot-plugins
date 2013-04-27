@@ -1,4 +1,4 @@
-# urlshortener.py
+# tiny.py
 # (C) 2013 Martijn Gonlag
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,4 +42,3 @@ class urlshortener:
                 unique_word_b = '</resolvedURL>'
                 resolveURL = api_url[api_url.find(unique_word_a)+len(unique_word_a):api_url.find(unique_word_b)].strip()
                 sock.msg(buffer.to, 'http://'+ resolveURL)
-
