@@ -16,17 +16,18 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import tinyurl
-from urllib2 import urlopen
+import urllib
+import re
 
-class urlshortener:
+class tiny:
     def __init__(self):
     
         self.allowed_functions = {'create': 0, 'undo': 0, 'help': 0}
     
     def help(self, bot, sock, buffer):
         sock.msg(buffer.to, 'Usage: ')
-        sock.msg(buffer.to, ' * tinyurl.create <url> -- generates new tinyurl')
-        sock.msg(buffer.to, ' * tinyurl.undo <url> -- remove tinyurl')
+        sock.msg(buffer.to, ' * tiny.create <url> -- generates new tinyurl')
+        sock.msg(buffer.to, ' * tiny.undo <url> -- remove tinyurl')
     
     def create(self, bot, sock, buffer):
         arguments = buffer.msg.split()
@@ -35,10 +36,6 @@ class urlshortener:
         
     def undo(self, bot, sock, buffer):
         arguments = buffer.msg.split()
-        for api_url in urlopen('http://api.unshort.me/?r=%s&t=xml' % (arguments[1])):
- 
-            if "<resolvedURL>" in api_url:
-                unique_word_a = '<resolvedURL>http://tinyurl.com/'
-                unique_word_b = '</resolvedURL>'
-                resolveURL = api_url[api_url.find(unique_word_a)+len(unique_word_a):api_url.find(unique_word_b)].strip()
-                sock.msg(buffer.to, 'http://'+ resolveURL)
+        api_url = urllib.urlopen("http://api.unshort.me?r=%s&t=xml" % (arguments[1])).read()
+        search = re.search("<resolvedURL>http://tinyurl.com/([^<]+)</resolvedURL>",  api_url).group(1)
+        sock.msg(buffer.to, 'www.' + search)
