@@ -1,4 +1,4 @@
-# dictionaryattack.py
+# tiny.py
 # (C) 2013 Martijn Gonlag
 #
 # This program is free software; you can redistribute it and/or modify
@@ -14,40 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# To-Do:
-#   * Add threading capability
-#   * Add ability to crack single hash
 
-from hashlib import md5
-from urllib2 import urlopen
-import sys 
+import tinyurl
+import urllib
+import re
 
-class dictionaryattack:
+class tiny:
     def __init__(self):
-       self.allowed_functions = {'help': 1, 'crack': 10 }
-		
+    
+        self.allowed_functions = {'create': 0, 'undo': 0, 'help': 0}
+    
     def help(self, bot, sock, buffer):
-        sock.msg(buffer.to, "Usage: ")
-        sock.msg(buffer.to, " * dictionaryattack.help")
-        sock.msg(buffer.to, " * dictionaryattack.crack <hash list url> <word list url>")
-
-    def crack(self, bot, sock, buffer):
-        cracked_hashes = {}
+        sock.msg(buffer.to, 'Usage: ')
+        sock.msg(buffer.to, ' * tiny.create <url> -- generates new tinyurl')
+        sock.msg(buffer.to, ' * tiny.undo <url> -- remove tinyurl')
+    
+    def create(self, bot, sock, buffer):
         arguments = buffer.msg.split()
-        for line in urlopen(arguments[1]):
-            cracked_hashes[line.rstrip()] = None
-            num_uncracked = len(cracked_hashes)
-
-        for word in urlopen(arguments[2]):
-            word = word.rstrip()
-            hash = md5(word).hexdigest()
-
-            if hash not in cracked_hashes: continue
-
-            cracked_hashes[hash] = word
-            num_uncracked -= 1
-            if not num_uncracked: break
-
-        for hash in cracked_hashes:
-            if hash: sock.msg(buffer.to, "Found %s as %s" % (hash, cracked_hashes[hash]))
+        url = tinyurl.create_one(arguments[1])
+        sock.msg(buffer.to, url)
+        
+    def undo(self, bot, sock, buffer):
+        arguments = buffer.msg.split()
+        api_url = urllib.urlopen("http://api.unshort.me?r=%s&t=xml" % (arguments[1])).read()
+        search = re.search("<resolvedURL>http://tinyurl.com/([^<]+)</resolvedURL>",  api_url).group(1)
+        sock.msg(buffer.to, 'www.' + search)
